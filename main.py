@@ -1,6 +1,9 @@
 from urllib import response
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import pandas
+
 
 finviz_url = 'https://finviz.com/quote.ashx?t='
 tickers = ['AMZN', 'AMD', 'FB']
@@ -20,18 +23,14 @@ for ticker in tickers:
 parsed_data = []
 
 for ticker, news_table in news_tables.items():
-    for row in news_table.findAll('tr'):
+    for row in news_table.findAll('a'):
             title = row.text
             parsed_data.append([ticker, title])
         
-print(parsed_data)
+df = pandas.DataFrame(parsed_data, columns=['ticker', 'title'])
+vader = SentimentIntensityAnalyzer()
 
+f = lambda title: vader.polarity_scores(title)['compound']
+df['compound'] = df['title'].apply(f)
+print(df.head())
 
-
-# amzn_data = news_tables['AMZN']
-# amzn_rows = amzn_data.findAll('td')
-
-
-# for index, row in enumerate(amzn_rows):
-#     title = row.text
-#     print(title)
